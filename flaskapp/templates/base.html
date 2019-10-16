@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <head>
+        
+  <title> Twitoff!!!! {{ title }} </title>
+  <!-- we added a title here -->
+  </head>
+
+  <body>
+    <h1> Twitoff app </h1>
+    <p> Placeholder for content </p>
+
+    <ul>
+      {% for user in users %}
+      <li>{{ user.name }} </li>
+      {% endfor %}
+    </ul>
+
+  </body>
+
+  <footer>
+  </footer>
+
+</html>

@@ -9,6 +9,10 @@ mypy = "*"
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
+basilica = "*"
+tweepy = "*"
+python-decouple = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.7"

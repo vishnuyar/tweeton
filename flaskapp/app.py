@@ -1,24 +1,28 @@
 """Main application for twitoff"""
 
 #imports
-from flask import Flask
-from .models import DB
+from decouple import config
+from flask import Flask, render_template, request
+from .models import DB, User
 
 def create_app():
     """create and configures an instance of a flask app"""
     app = Flask(__name__)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+    app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URL')
+    app.config['ENV'] = config('ENV') #should change this later to production
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
+
     DB.init_app(app)
-    DB.create_all()
+
     @app.route('/')
     def root():
-        return "Welcome to your and you app"
-    
+        users = User.query.all()
+        return render_template('base.html', title='Home', users=users)
 
-    #testing for hello route
-    @app.route('/hello')
-    def hello():
-        return "Hello to the HelloWorld"
-
+    @app.route('/reset')
+    def reset():
+        DB.drop_all()
+        DB.create_all()
+        return render_template('base.html', title='DB Reset', users=[])
     return app
