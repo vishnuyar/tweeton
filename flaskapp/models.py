@@ -8,9 +8,14 @@ class User(DB.Model):
     """Twitter users that we pull and analyze"""
     id = DB.Column(DB.BigInteger, primary_key=True)
     name = DB.Column(DB.String(15), nullable=False)
-
+    last_tweeted = DB.Column(DB.DateTime())
+    followers = DB.Column(DB.BigInteger)
+    following = DB.Column(DB.BigInteger)
+    available_tweets = DB.Column(DB.Integer)
+    oldest_tweet =  DB.Column(DB.DateTime())
+    oldest_tweet_id = DB.Column(DB.BigInteger)
     newest_tweet_id = DB.Column(DB.BigInteger)
-
+    
     def __repr__(self):
         return '<User {}>'.format(self.name)
 

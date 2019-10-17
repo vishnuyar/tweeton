@@ -1,25 +1,39 @@
 <!DOCTYPE html>
 <html>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <head>
-        
-  <title> Twitoff!!!! {{ title }} </title>
-  <!-- we added a title here -->
+    <title> Twitoff!! {{ title }} </title>
   </head>
 
   <body>
-    <h1> Twitoff app </h1>
-    <p> Placeholder for content </p>
-
-    <ul>
-      {% for user in users %}
-      <li>{{ user.name }} </li>
-      {% endfor %}
-    </ul>
-
+    <h1> Twitoff! </h1>
+        <!-- add new block here -->
+    {% block content %}
+    <form action="/user" method="post">
+      <input type="text" name="twitter_handle" placeholder="User to add">
+      <input type="submit" value="Add New User">
+    </form>
+    <p>{{ message }}</p>
+    <p>Available Users</p>
+    <table style="width:100%">
+      <tr>
+        <th>Twitter handle</th>
+        <th>Followers</th>
+        <th>Following</th>
+        <th>Tweets available</th>
+        <th>oldest tweet date</th>
+        <th>latest tweet date</th>
+      </tr>
+    {% for user in users %}
+    <tr>
+      <td><a href='/user/{{ user.name }}'>{{ user.name }}</a></td>
+      <td>{{ user.followers }} </td>
+      <td>{{ user.following }} </td>
+      <td>{{ user.available_tweets }} </td>
+      <td>{{ user.oldest_tweet }} </td>
+      <td>{{ user.last_tweeted }} </td>
+    </tr>
+    {% endfor %}
+    </table>
+    {% endblock %}
   </body>
-
-  <footer>
-  </footer>
-
 </html>
