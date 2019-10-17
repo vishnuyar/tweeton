@@ -5,20 +5,24 @@ from sklearn.linear_model import LogisticRegression
 from .models import User
 from .twitter import BASILICA
 
-def predict_user(user1_name, user2_name, tweet_text, cache=None):
+def predict_user(selected_users, tweet_text, cache=None):
     """Determine and return which user is more likely to say something"""
-    user_set = pickle.dumps((user1_name, user2_name))
+    user_set = pickle.dumps((selected_users))
     if cache and cache.exists(user_set):
         log_reg = pickle.loads(cache.get(user_set))
     else:
-        user1 = User.query.filter(User.name == user1_name).one()
-        user2 = User.query.filter(User.name == user2_name).one()
-        user1_embeddings = np.array([tweet.embedding for tweet in user1.tweets])
-        user2_embeddings = np.array([tweet.embedding for tweet in user2.tweets])
-        embeddings = np.vstack([user1_embeddings, user2_embeddings])
-        labels = np.concatenate([np.ones(len(user1.tweets)),
-                                 np.zeros(len(user2.tweets))])
+        embeddings = []
+        labels = []
+        for i,user in enumerate(selected_users):
+            db_user = User.query.filter(User.name == user).one()        
+            user_embeddings = np.array([tweet.embedding for tweet in db_user.tweets])
+            if (len(embeddings)==0):
+                embeddings = user_embeddings
+                labels = np.ones(len(db_user.tweets))*i
+            else:
+                embeddings = np.vstack([embeddings, user_embeddings])
+                labels = np.concatenate([labels,(np.ones(len(db_user.tweets))*i)])
         log_reg = LogisticRegression().fit(embeddings, labels)
         cache and cache.set(user_set, pickle.dumps(log_reg))
     tweet_embeddings = BASILICA.embed_sentence(tweet_text, model='twitter')
-    return log_reg.predict(np.array(tweet_embedding).reshape(1, -1))
+    return log_reg.predict(np.array(tweet_embeddings).reshape(1, -1))

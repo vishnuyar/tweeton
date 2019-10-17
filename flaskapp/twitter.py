@@ -21,7 +21,7 @@ def add_user_tweets(username):
         twitter_user=TWITTER.get_user(username)
         db_user= User(id=twitter_user.id, name=username)
         DB.session.add(db_user)
-        tweets = twitter_user.timeline(count=200, exclude_replies=True,
+        tweets = twitter_user.timeline(count=200, 
         include_rts=False, tweet_mode='extended')
         if tweets:
             db_user.newest_tweet_id = tweets[0].id
@@ -49,7 +49,7 @@ def update_all_users():
         users = User.query.all()
         for user in users:
             twitter_user=TWITTER.get_user(user.name)
-            tweets = twitter_user.timeline(count=200, exclude_replies=True,
+            tweets = twitter_user.timeline(count=200, 
             include_rts=False, tweet_mode='extended', since_id=user.newest_tweet_id)
             if tweets:
                 user.followers = twitter_user.followers_count
@@ -65,6 +65,35 @@ def update_all_users():
                     db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
                     user.tweets.append(db_tweet)
                     DB.session.add(db_tweet)
+    except Exception as e:
+        print('Error processing {}: {}'.format(user.name,e))
+        raise e
+    else:
+        DB.session.commit()
+
+def get_previous_tweets(username):
+    """ Update the database with user's old tweets """
+    try:
+        twitter_user=TWITTER.get_user(username)
+        print(username)
+        user = User.query.filter(User.name == username).one()
+        print(user) 
+        tweets = twitter_user.timeline(count=200, 
+        include_rts=False, tweet_mode='extended', max_id=user.newest_tweet_id)
+        if tweets:
+            user.followers = twitter_user.followers_count
+            user.following = twitter_user.friends_count
+            #adding count to the existing tweets available
+            user.available_tweets = user.available_tweets+len(tweets)
+            user.oldest_tweet_id = tweets[-1].id
+            user.oldest_tweet = tweets[-1].created_at
+            DB.session.add(user)
+            for tweet in tweets:
+                #Calculate embedding on the full tweet
+                embedding = BASILICA.embed_sentence(tweet.full_text, model='twitter')
+                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
+                user.tweets.append(db_tweet)
+                DB.session.add(db_tweet)
     except Exception as e:
         print('Error processing {}: {}'.format(user.name,e))
         raise e
