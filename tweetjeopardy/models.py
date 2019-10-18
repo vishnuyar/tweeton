@@ -1,4 +1,4 @@
-"""SQLALchemy models for Twitoff"""
+"""Database models for the Application using SQLAlchemy"""
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -20,7 +20,7 @@ class User(DB.Model):
         return '<User {}>'.format(self.name)
 
 class Tweet(DB.Model):
-    """Tweets"""
+    """Tweets of the user who will be players"""
     id = DB.Column(DB.BigInteger, primary_key=True)
     text = DB.Column(DB.Unicode(300))
     embedding = DB.Column(DB.PickleType, nullable = False)

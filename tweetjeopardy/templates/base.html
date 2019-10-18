@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+  <head>
+    <title> Twitter Jeopardy </title>
+  </head>
+
+  <body>
+    <div class="jumbotron">
+        <a href="/"> <h1>Twitter Jeopardy</h1></a>
+    </div>
+    <div class="container">
+    {% block content %}
+    <div class="row">
+      <div class="col-6">
+        <form action="/user" method="post">
+          <input type="text" name="twitter_handle" maxlength="10" placeholder="twitter handle without @">
+          <button type="submit" class="btn btn-primary">Add New Player</button>
+        </form>
+      </div>
+  
+      <div class="col-6">
+        <form action="/whotweetsthis" method="post">
+          <input type="text" name="tweet_tweet" maxlength="140" placeholder="tweet tweet">
+          <button type="submit" class="btn btn-primary">Play Jeopoardy</button>
+      </div>
+    </div>  
+  <div class="row">
+    <div class="col-6">
+        <p>{{ message }}</p>
+    </div>
+    <div class="col-6">
+      <p>{{ jeopardymessage }}</p>
+    </div>
+  </div>
+</div>
+    <table class="table" style="width:100%">
+      <thead class="thead-dark">
+      <tr>
+        <th scope="col">Twitter handle</th>
+        <th scope="col">Followers</th>
+        <th scope="col">Following</th>
+        <th scope="col">Tweets available</th>
+        <th scope="col">Oldest tweet</th>
+        <th scope="col">Latest tweet</th>
+        <th scope="col">Select Players</th>
+      </tr>
+      </thead>
+    {% for user in users %}
+    <tr>
+        <th scope="row"><a href='/user/{{ user.name }}'>{{ user.name }}</a></th>
+      <td>{{ user.followers }} </td>
+      <td>{{ user.following }} </td>
+      <td>{{ user.available_tweets }} </td>
+      <td>{{ user.oldest_tweet }} </td>
+      <td>{{ user.last_tweeted }} </td>
+      <td>
+        <input class="form-check-input" type="checkbox" name="selectusers" value="{{ user.name }}">
+        <label class="form-check-label" for="{{ user.name }}" class="mr-2 label-table"></label>
+      </td> 
+    </tr>
+    {% endfor %}
+    </table>
+    
+  </form>
+    {% endblock %}
+    <footer class="page-footer font-small blue">
+
+        <!-- Copyright -->
+        <div class="className='fab fa-github-square mr-1'">Vishnu Yarmaneni:
+          <a href="https://github.com/vishnuyar/"> GitHub</a>
+        </div>
+        <!-- Copyright -->
+      
+      </footer>
+  </body>
+</html>

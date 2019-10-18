@@ -6,7 +6,11 @@ from .models import User
 from .twitter import BASILICA
 
 def predict_user(selected_users, tweet_text, cache=None):
-    """Determine and return which user is more likely to say something"""
+    """
+    Determine and return which user is more likely to tweet the text
+    Using Logistic Regression for multiclassifcation using Twitter text using 
+    twitter api and using the embeddings from Basilica api
+    """
     user_set = pickle.dumps((selected_users))
     if cache and cache.exists(user_set):
         log_reg = pickle.loads(cache.get(user_set))
@@ -21,6 +25,7 @@ def predict_user(selected_users, tweet_text, cache=None):
                 labels = np.ones(len(db_user.tweets))*i
             else:
                 embeddings = np.vstack([embeddings, user_embeddings])
+                #Label for each user is in the order of the training data being loaded
                 labels = np.concatenate([labels,(np.ones(len(db_user.tweets))*i)])
         log_reg = LogisticRegression().fit(embeddings, labels)
         cache and cache.set(user_set, pickle.dumps(log_reg))

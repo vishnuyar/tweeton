@@ -1,0 +1,1 @@
+web: gunicorn tweetjeopardy:server -t 120
