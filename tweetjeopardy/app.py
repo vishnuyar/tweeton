@@ -108,6 +108,11 @@ def create_app():
         return render_template('user.html', title=username, tweets=tweets[:5],
                                     message=message,user=tweetuser)
 
-    
+    @app.route('/createdatabase')
+    def createdatabase():
+        try:
+            DB.create_all()
+        except Exception as e:
+            pass
 
     return app
