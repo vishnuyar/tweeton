@@ -1,1 +1,1 @@
-web: gunicorn tweetjeopardy:server -t 120
+web: gunicorn tweetjeopardy:APP -t 120
