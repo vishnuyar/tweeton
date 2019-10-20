@@ -7,6 +7,7 @@ from .models import DB, User,Tweet
 from .twitter import add_user_tweets,update_all_users,get_previous_tweets,get_new_tweets
 from .predict import predict_user
 from sqlalchemy import desc
+from .background_jobs import get_new_tweets_background,get_old_tweets_background
 
 def create_app():
     """create and configures an instance of a flask app"""
@@ -113,6 +114,19 @@ def create_app():
         try:
             DB.create_all()
         except Exception as e:
-            pass
+            message="creating database failed"
+        users = User.query.all()
+        return render_template('base.html', title='Home', users=users,message="")
+
+    @app.route('/longbackgroundjobs')
+    def updatetweetsoldnew():
+        try:
+            get_old_tweets_background()
+            get_new_tweets_background()
+            message = "background jobs completed"
+        except Exception as e:
+            message="creating database failed"
+        users = User.query.all()
+        return render_template('base.html', title='Home', users=users,message=message)
 
     return app

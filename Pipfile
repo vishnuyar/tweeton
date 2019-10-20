@@ -15,6 +15,7 @@ python-decouple = "*"
 python-dotenv = "*"
 scikit-learn = "*"
 gunicorn = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.7"

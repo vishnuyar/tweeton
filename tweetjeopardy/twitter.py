@@ -12,7 +12,7 @@ TWITTER_AUTH.set_access_token(config('TWITTER_ACCESS_TOKEN'),
 TWITTER = tweepy.API(TWITTER_AUTH)
 
 BASILICA = basilica.Connection(config('BASILICA_KEY'))
-
+TWEETS_QTY = 10
 #to do - add functions later
 
 def add_user_tweets(username):
@@ -21,7 +21,8 @@ def add_user_tweets(username):
         twitter_user=TWITTER.get_user(username)
         db_user= User(id=twitter_user.id, name=username)
         DB.session.add(db_user)
-        tweets = twitter_user.timeline(count=100,include_rts=False, tweet_mode='extended')
+        print(TWEETS_QTY)
+        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False, tweet_mode='extended')
         if tweets:
             db_user.newest_tweet_id = tweets[0].id
             db_user.followers = twitter_user.followers_count
@@ -50,7 +51,7 @@ def update_all_users():
         users = User.query.all()
         for user in users:
             twitter_user=TWITTER.get_user(user.name)
-            tweets = twitter_user.timeline(count=100, 
+            tweets = twitter_user.timeline(count=TWEETS_QTY, 
             include_rts=False, tweet_mode='extended', since_id=user.newest_tweet_id)
             if tweets:
                 user.followers = twitter_user.followers_count
@@ -77,7 +78,7 @@ def get_previous_tweets(username):
     try:
         twitter_user=TWITTER.get_user(username)
         db_user = User.query.filter(User.name == username).one()
-        tweets = twitter_user.timeline(count=100,include_rts=False,
+        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False,
                      tweet_mode='extended', max_id=db_user.oldest_tweet_id)
 
         if len(tweets)>1:
@@ -107,7 +108,7 @@ def get_new_tweets(username):
     try:
         twitter_user=TWITTER.get_user(username)
         db_user = User.query.filter(User.name == username).one()
-        tweets = twitter_user.timeline(count=100,include_rts=False,
+        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False,
                      tweet_mode='extended', since_id=db_user.newest_tweet_id)
 
         if len(tweets)>0:
