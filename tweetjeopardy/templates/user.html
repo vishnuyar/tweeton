@@ -17,9 +17,16 @@
         <button type="submit" class="btn btn-info">Add Old Tweets</button>
     </div>
   </div> 
+  <p><h4>Latest Tweets</h4></p>
 <ul>
-  {% for tweet in tweets %}
-  <li> {{ tweet.id }} - {{ tweet.text }}</li>
+  {% for tweet in newtweets %}
+  <li> {{ tweet.tweet_time }} - {{ tweet.text }}</li>
+  {% endfor %}
+</ul>
+<p><h4> Oldest Tweets</h4></p>
+<ul>
+  {% for tweet in oldtweets %}
+  <li> {{ tweet.tweet_time }} - {{ tweet.text }}</li>
   {% endfor %}
 </ul>
 <table class="table" style="width:100%">

@@ -3,6 +3,7 @@
 import basilica
 import tweepy
 from decouple import config
+from sqlalchemy import desc
 from .models import DB, Tweet, User
 
 TWITTER_AUTH = tweepy.OAuthHandler(config('TWITTER_CONSUMER_KEY'),
@@ -12,17 +13,16 @@ TWITTER_AUTH.set_access_token(config('TWITTER_ACCESS_TOKEN'),
 TWITTER = tweepy.API(TWITTER_AUTH)
 
 BASILICA = basilica.Connection(config('BASILICA_KEY'))
-TWEETS_QTY = 10
+LIGHT_QTY = 10
 #to do - add functions later
 
-def add_user_tweets(username):
+def add_user_tweets(username,tweets_qty=LIGHT_QTY):
     """Add a new user and their Tweets, or else error"""
     try:
         twitter_user=TWITTER.get_user(username)
         db_user= User(id=twitter_user.id, name=username)
         DB.session.add(db_user)
-        print(TWEETS_QTY)
-        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False, tweet_mode='extended')
+        tweets = twitter_user.timeline(count=tweets_qty,include_rts=False, tweet_mode='extended')
         if tweets:
             db_user.newest_tweet_id = tweets[0].id
             db_user.followers = twitter_user.followers_count
@@ -34,7 +34,8 @@ def add_user_tweets(username):
             for tweet in tweets:
                 #Calculate embedding on the full tweet
                 embedding = BASILICA.embed_sentence(tweet.full_text, model='twitter')
-                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
+                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
+                            embedding=embedding,tweet_time=tweet.created_at)
                 db_user.tweets.append(db_tweet)
                 DB.session.add(db_tweet)
         else:
@@ -51,7 +52,7 @@ def update_all_users():
         users = User.query.all()
         for user in users:
             twitter_user=TWITTER.get_user(user.name)
-            tweets = twitter_user.timeline(count=TWEETS_QTY, 
+            tweets = twitter_user.timeline(count=LIGHT_QTY, 
             include_rts=False, tweet_mode='extended', since_id=user.newest_tweet_id)
             if tweets:
                 user.followers = twitter_user.followers_count
@@ -64,7 +65,8 @@ def update_all_users():
                 for tweet in tweets:
                     #Calculate embedding on the full tweet
                     embedding = BASILICA.embed_sentence(tweet.full_text, model='twitter')
-                    db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
+                    db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
+                            embedding=embedding,tweet_time=tweet.created_at)
                     user.tweets.append(db_tweet)
                     DB.session.add(db_tweet)
     except Exception as e:
@@ -73,12 +75,12 @@ def update_all_users():
     else:
         DB.session.commit()
 
-def get_previous_tweets(username):
+def get_previous_tweets(username,tweets_qty=LIGHT_QTY):
     """ Update the database with user's old tweets """
     try:
         twitter_user=TWITTER.get_user(username)
         db_user = User.query.filter(User.name == username).one()
-        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False,
+        tweets = twitter_user.timeline(count=tweets_qty,include_rts=False,
                      tweet_mode='extended', max_id=db_user.oldest_tweet_id)
 
         if len(tweets)>1:
@@ -94,7 +96,8 @@ def get_previous_tweets(username):
             for tweet in tweets:
                 #Calculate embedding on the full tweet
                 embedding = BASILICA.embed_sentence(tweet.full_text, model='twitter')
-                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
+                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
+                            embedding=embedding,tweet_time=tweet.created_at)
                 db_user.tweets.append(db_tweet)
                 DB.session.add(db_tweet)
     except Exception as e:
@@ -103,12 +106,12 @@ def get_previous_tweets(username):
     else:
         DB.session.commit()
 
-def get_new_tweets(username):
+def get_new_tweets(username,tweets_qty=LIGHT_QTY):
     """ Update the database with user's new tweets """
     try:
         twitter_user=TWITTER.get_user(username)
         db_user = User.query.filter(User.name == username).one()
-        tweets = twitter_user.timeline(count=TWEETS_QTY,include_rts=False,
+        tweets = twitter_user.timeline(count=tweets_qty,include_rts=False,
                      tweet_mode='extended', since_id=db_user.newest_tweet_id)
 
         if len(tweets)>0:
@@ -122,7 +125,8 @@ def get_new_tweets(username):
             for tweet in tweets:
                 #Calculate embedding on the full tweet
                 embedding = BASILICA.embed_sentence(tweet.full_text, model='twitter')
-                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],embedding=embedding)
+                db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
+                            embedding=embedding,tweet_time=tweet.created_at)
                 db_user.tweets.append(db_tweet)
                 DB.session.add(db_tweet)
     except Exception as e:
@@ -130,3 +134,13 @@ def get_new_tweets(username):
         raise e
     else:
         DB.session.commit()
+
+def top5_newold_tweets(name):
+    try:
+        tweetuser = User.query.filter(User.name == name).one()
+        oldtweets = Tweet.query.filter(Tweet.user==tweetuser).order_by(Tweet.id).limit(5)
+        newtweets = Tweet.query.filter(Tweet.user==tweetuser).order_by(desc(Tweet.id)).limit(5)
+    except Exception as e:
+        print('Error processing {}: {}'.format(name,e))
+        raise e
+    return newtweets,oldtweets,tweetuser
